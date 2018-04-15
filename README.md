@@ -9,7 +9,7 @@ Use [Composer](https://getcomposer.org/)
 ```json
 {
 	"require": {
-		"codification-nl/hashbang": "*"
+		"codification-nl/hashbang": "~3.0.0"
 	}
 }
 ```
