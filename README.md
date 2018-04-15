@@ -9,8 +9,14 @@ Use [Composer](https://getcomposer.org/)
 ```json
 {
 	"require": {
-		"codification-nl/hashbang": "~3.0.0"
-	}
+		"codification-nl/hashbang": "dev-master"
+	},
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/codification-nl/Hashbang"
+		}
+	]
 }
 ```
 
@@ -21,7 +27,7 @@ Use [Composer](https://getcomposer.org/)
 ```php
 <?php
 
-require_once 'vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
 
 $router = new \Hashbang\Router();
 
