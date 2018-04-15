@@ -1,0 +1,23 @@
+{
+	"name": "codification-nl/hashbang",
+	"description": "It's just really easy",
+	"version": "3.0.0",
+	"type": "library",
+	"homepage": "https://github.com/codification-nl/Hashbang",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Kevin Wijsenbach",
+			"email": "kevin@codification.nl"
+		}
+	],
+	"require": {
+		"php": ">=7.1.0",
+		"ext-pdo": "*"
+	},
+	"autoload": {
+		"psr-4": {
+			"Codification\\Hashbang\\": "src/Hashbang/"
+		}
+	}
+}
