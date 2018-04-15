@@ -96,7 +96,7 @@ namespace Hashbang
 			finally
 			{
 				if ($this->logger !== null &&
-				    $this->logger->level() >= $response->getCode())
+				    $this->logger->level() <= $response->getCode())
 				{
 					$this->logger->log($response);
 				}
