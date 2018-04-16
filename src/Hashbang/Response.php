@@ -132,7 +132,7 @@ namespace Hashbang
 		 */
 		public function sendHeaders() : void
 		{
-			header(sprintf('HTTP/1.1 %d %s', $this->code, Response::HTTP_STATUS_CODES[$this->code]));
+			header("$_SERVER[SERVER_PROTOCOL] $this->code " . Response::HTTP_STATUS_CODES[$this->code]);
 			header('Cache-Control: no-cache');
 			header('Content-Type: application/json');
 		}
@@ -142,7 +142,7 @@ namespace Hashbang
 		 */
 		public function __toString() : string
 		{
-			return json_encode($this) . "\n";
+			return json_encode($this) . PHP_EOL;
 		}
 
 		/**

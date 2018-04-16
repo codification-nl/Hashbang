@@ -23,19 +23,24 @@ namespace Hashbang
 		private $logger = null;
 
 		/**
-		 * @param string   $method
+		 * @param string[] $methods
 		 * @param string   $route
-		 * @param callable $callback
-		 * @return void
+		 * @param callable $action
+		 * @return Route
 		 */
-		public function add(string $method, string $route, callable $callback) : void
+		public function map(array $methods, string $route, callable $action) : Route
 		{
 			if (!isset($this[$route]))
 			{
 				$this[$route] = new Route($route);
 			}
 
-			$this[$route][$method] = $callback;
+			foreach ($methods as $method)
+			{
+				$this[$route][$method] = $action;
+			}
+
+			return $this[$route];
 		}
 
 		/**

@@ -204,7 +204,7 @@
 			window.addEventListener("hashchange", () => this.match(), false);
 		}
 
-		add(handle, callback, last) {
+		map(handle, callback, last) {
 			super.push(new Route(handle, callback, last));
 		}
 

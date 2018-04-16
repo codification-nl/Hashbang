@@ -29,20 +29,16 @@ Use [Composer](https://getcomposer.org/)
 
 require __DIR__ . '/vendor/autoload.php';
 
-$router = new \Hashbang\Router();
+$app = new \Hashbang\App();
 
-$router->add('GET', 'hello(/:test)?', function ($data, $test = 'world')
+$app->get('hello(/:test)?', function ($data, $test = 'world')
 	{
 		return \Hashbang\Response::ok([
 			'result' => $test,
 		]);
 	});
 
-$response = $router->match();
-
-$response->sendHeaders();
-
-echo $response;
+$app->run();
 ```
 
 ### `.htaccess`

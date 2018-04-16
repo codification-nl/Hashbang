@@ -9,10 +9,12 @@ namespace Hashbang
 	 */
 	class Request
 	{
-		public const GET    = 'GET';
-		public const POST   = 'POST';
-		public const PUT    = 'PUT';
-		public const DELETE = 'DELETE';
+		public const GET     = 'GET';
+		public const POST    = 'POST';
+		public const PUT     = 'PUT';
+		public const PATCH   = 'PATCH';
+		public const DELETE  = 'DELETE';
+		public const OPTIONS = 'OPTIONS';
 
 		/**
 		 * @return string
