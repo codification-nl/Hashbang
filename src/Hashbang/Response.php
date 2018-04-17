@@ -28,7 +28,7 @@ namespace Hashbang
 		public const BAD_GATEWAY         = 502;
 		public const SERVICE_UNAVAILABLE = 503;
 
-		public const HTTP_STATUS_CODES = [
+		public const HTTP_REASON_PHRASE = [
 			Response::OK                  => 'OK',
 			Response::CREATED             => 'Created',
 			Response::ACCEPTED            => 'Accepted',
@@ -93,7 +93,7 @@ namespace Hashbang
 		 */
 		public function __construct(int $code, string $message, $data = null)
 		{
-			if (!isset(Response::HTTP_STATUS_CODES[$code]))
+			if (!isset(Response::HTTP_REASON_PHRASE[$code]))
 			{
 				throw new InvalidArgumentException();
 			}
@@ -132,7 +132,11 @@ namespace Hashbang
 		 */
 		public function sendHeaders() : void
 		{
-			header("$_SERVER[SERVER_PROTOCOL] $this->code " . Response::HTTP_STATUS_CODES[$this->code]);
+			$protocol = $_SERVER['SERVER_PROTOCOL'];
+			$message  = Response::HTTP_REASON_PHRASE[$this->code];
+
+			header("$protocol $this->code $message");
+
 			header('Cache-Control: no-cache');
 			header('Content-Type: application/json');
 		}

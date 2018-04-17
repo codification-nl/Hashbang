@@ -30,17 +30,14 @@ namespace Hashbang
 		 */
 		public function map(array $methods, string $route, callable $action) : Route
 		{
-			if (!isset($this[$route]))
-			{
-				$this[$route] = new Route($route);
-			}
+			$result = $this[$route] ?? ($this[$route] = new Route($route));
 
 			foreach ($methods as $method)
 			{
-				$this[$route][$method] = $action;
+				$result[$method] = $action;
 			}
 
-			return $this[$route];
+			return $result;
 		}
 
 		/**

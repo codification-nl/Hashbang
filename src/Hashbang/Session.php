@@ -20,6 +20,7 @@ namespace Hashbang
 				return;
 			}
 
+			/** @noinspection SpellCheckingInspection */
 			session_start([
 				'name'                   => $name,
 				'gc_maxlifetime'         => $lifetime,

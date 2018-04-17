@@ -26,6 +26,14 @@ namespace Hashbang
 		private $pattern;
 
 		/**
+		 * @return string
+		 */
+		public function getPattern() : string
+		{
+			return $this->pattern;
+		}
+
+		/**
 		 * Route constructor.
 		 * @param string $route
 		 */
