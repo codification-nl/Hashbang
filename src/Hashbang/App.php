@@ -13,6 +13,11 @@ namespace Hashbang
 		private $router;
 
 		/**
+		 * @var Logger
+		 */
+		private $logger = null;
+
+		/**
 		 * @return Router
 		 */
 		public function getRouter() : Router
@@ -123,9 +128,23 @@ namespace Hashbang
 		{
 			$response = $this->router->match();
 
+			if ($this->logger !== null &&
+			    $this->logger->level() <= $response->getCode())
+			{
+				$this->logger->log($response);
+			}
+
 			$response->sendHeaders();
 
 			echo $response;
+		}
+
+		/**
+		 * @param Logger $logger
+		 */
+		public function setLogger(Logger $logger) : void
+		{
+			$this->logger = $logger;
 		}
 	}
 }

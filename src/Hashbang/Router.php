@@ -18,11 +18,6 @@ namespace Hashbang
 		private $routes = [];
 
 		/**
-		 * @var Logger
-		 */
-		private $logger = null;
-
-		/**
 		 * @param string[] $methods
 		 * @param string   $route
 		 * @param callable $action
@@ -95,25 +90,8 @@ namespace Hashbang
 			{
 				$response = Response::error($e);
 			}
-			finally
-			{
-				if ($this->logger !== null &&
-				    $this->logger->level() <= $response->getCode())
-				{
-					$this->logger->log($response);
-				}
-			}
 
 			return $response;
-		}
-
-		/**
-		 * @param Logger|null $logger
-		 * @return void
-		 */
-		public function setLogger(Logger $logger = null) : void
-		{
-			$this->logger = $logger;
 		}
 
 		/**

@@ -16,14 +16,14 @@ namespace Hashbang
 		private const PATTERN  = '`:[a-z]+`';
 
 		/**
-		 * @var callable[]
-		 */
-		private $methods = [];
-
-		/**
 		 * @var string
 		 */
 		private $pattern;
+
+		/**
+		 * @var callable[]
+		 */
+		private $methods;
 
 		/**
 		 * @return string
@@ -35,14 +35,16 @@ namespace Hashbang
 
 		/**
 		 * Route constructor.
-		 * @param string $route
+		 * @param string     $route
+		 * @param callable[] $methods
 		 */
-		public function __construct(string $route)
+		public function __construct(string $route, array $methods = [])
 		{
 			$route = preg_replace(Route::OPTIONAL, '(?:$1)?', $route);
 			$route = preg_replace(Route::PATTERN, '([a-zA-Z0-9\\-._]+)', $route);
 
 			$this->pattern = "`$route`";
+			$this->methods = $methods;
 		}
 
 		/**
