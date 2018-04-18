@@ -107,14 +107,7 @@ namespace Hashbang
 
 			try
 			{
-				$result = $this->connection->query($sql);
-
-				if ($result === false)
-				{
-					return null;
-				}
-
-				return $result;
+				return $this->connection->query($sql) ?: null;
 			}
 			catch (PDOException $e)
 			{

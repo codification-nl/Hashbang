@@ -132,13 +132,13 @@ namespace Hashbang
 		 */
 		public function sendHeaders() : void
 		{
-			$protocol = $_SERVER['SERVER_PROTOCOL'];
-			$message  = Response::HTTP_REASON_PHRASE[$this->code];
+			$http = $_SERVER['SERVER_PROTOCOL'];
+			$code = Response::HTTP_REASON_PHRASE[$this->code];
 
-			header("$protocol $this->code $message");
+			header("$http $this->code $code");
 
-			header('Cache-Control: no-cache');
 			header('Content-Type: application/json');
+			header('Cache-Control: no-cache');
 		}
 
 		/**

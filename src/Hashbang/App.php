@@ -10,7 +10,15 @@ namespace Hashbang
 		/**
 		 * @var Router
 		 */
-		public $router;
+		private $router;
+
+		/**
+		 * @return Router
+		 */
+		public function getRouter() : Router
+		{
+			return $this->router;
+		}
 
 		/**
 		 * App constructor.
