@@ -8,7 +8,6 @@ namespace Hashbang
 
 	/**
 	 * Class Router
-	 * @implements ArrayAccess
 	 */
 	class Router implements ArrayAccess
 	{

@@ -7,8 +7,6 @@ namespace Hashbang
 
 	/**
 	 * Class Route
-	 * @implements ArrayAccess
-	 * @ac
 	 */
 	class Route implements ArrayAccess
 	{
