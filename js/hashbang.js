@@ -1,15 +1,16 @@
 // ==ClosureCompiler==
 // @compilation_level SIMPLE_OPTIMIZATIONS
 // @language ECMASCRIPT6_STRICT
-// @language_out ECMASCRIPT6_STRICT
+// @language_out NO_TRANSPILE
 // @output_file_name hashbang.min.js
+// @use_types_for_optimization true
 // ==/ClosureCompiler==
 
 (window => {
 	"use strict";
 
-	const document = window.document;
-	const location = window.location;
+	const document = window.document,
+	      location = window.location;
 
 	Object.defineProperty(Object.prototype, "define", {
 		value: function (property, value, writable) {
@@ -84,62 +85,72 @@
 		Math.define("clamp", (x, a, b) => Math.min(Math.max(+x, +a), +b));
 	}
 
+	/** @namespace HB */
+	const hb = {};
+
+	hb.define("uuid", () => {
+		const uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
+
+		return uuid.replace(/[xy]/g, function (i) {
+			let r = (Math.random() * 16) | 0;
+
+			if (i === "y") {
+				r = (r & 3) | 8;
+			}
+
+			return r.toString(16);
+		});
+	});
+
+
 	/**
-	 * Class Event
-	 * @memberOf HB
+	 * @class Event
 	 */
 	class Event {
 
 		/**
 		 * Event constructor.
 		 * @param {string} type
-		 * @param {EventCallback} callback
+		 * @param {Event~Callback} callback
 		 */
 		constructor(type, callback) {
 			/**
-			 * @public
 			 * @readonly
-			 * @member {string} type
-			 * @memberOf HB.Event#
+			 * @member {string} Event#type
 			 */
 			this.define("type", type);
 
 			/**
-			 * @public
-			 * @function callback
-			 * @param {...*} params
-			 * @memberOf HB.Event#
+			 * @readonly
+			 * @member {Event~Callback} Event#callback
 			 */
 			this.define("callback", callback);
 		}
 	}
 
 	/**
-	 * @callback EventCallback
+	 * @callback Event~Callback
 	 * @param {...*} params
 	 */
 
 	/**
-	 * Class EventTarget
-	 * @memberOf HB
+	 * @class hb.EventDispatcher
 	 */
-	class EventTarget {
+	class EventDispatcher {
 
 		/**
-		 * EventTarget constructor.
+		 * EventDispatcher constructor.
 		 */
 		constructor() {
 			/**
 			 * @private
 			 * @readonly
-			 * @member {HB.Event[]} _events
-			 * @memberOf HB.EventTarget#
+			 * @member {Array.<Event>} hb.EventDispatcher#_events
 			 */
 			this.define("_events", []);
 		}
 
 		/**
-		 * @public
 		 * @param {string} type
 		 * @param {...*} params
 		 */
@@ -152,9 +163,8 @@
 		}
 
 		/**
-		 * @public
 		 * @param {string} type
-		 * @param {EventCallback} callback
+		 * @param {Event~Callback} callback
 		 */
 		on(type, callback) {
 			this._events.push(new Event(type, callback));
@@ -162,173 +172,47 @@
 	}
 
 	/**
-	 * Class Timer
-	 * @extends HB.EventTarget
-	 * @memberOf HB
-	 */
-	class Timer extends EventTarget {
-
-		/**
-		 * Timer constructor.
-		 */
-		constructor() {
-			super();
-
-			/**
-			 * @private
-			 * @member {?number} _id
-			 * @memberOf HB.Timer#
-			 * @default null
-			 */
-			this.define("_id", null, true);
-		}
-
-		/**
-		 * @public
-		 * @param {number} seconds
-		 * @fires HB.Timer~started
-		 * @fires HB.Timer~ended
-		 */
-		start(seconds) {
-			this.stop();
-
-			this.dispatch("started");
-
-			this._id = window.setTimeout(() => {
-				this.dispatch("ended");
-				this._id = null;
-			}, seconds * 1000);
-		}
-
-		/**
-		 * @public
-		 * @fires HB.Timer~stopped
-		 */
-		stop() {
-			if (this._id === null) {
-				return;
-			}
-
-			window.clearTimeout(this._id);
-
-			this.dispatch("stopped");
-
-			this._id = null;
-		}
-	}
-
-	/**
-	 * @public
-	 * @memberOf HB.Timer~
-	 * @event started
-	 */
-
-	/**
-	 * @public
-	 * @memberOf HB.Timer~
-	 * @event ended
-	 */
-
-	/**
-	 * @public
-	 * @memberOf HB.Timer~
-	 * @event stopped
-	 */
-
-	/**
-	 * Class Template
-	 * @memberOf HB
-	 */
-	class Template {
-
-		/**
-		 * Template constructor.
-		 * @param {HTMLTemplateElement} element
-		 */
-		constructor(element) {
-			let source = element.innerHTML;
-
-			source = source.replace(/\s{2,}/g, "");
-			source = source.replace(/{{(.*?)}}/g, "',$1,'");
-			source = source.split("{%").join("');");
-			source = source.split("%}").join("a.push('");
-			source = `const a=[];a.push('${source}');return a.join('');`;
-
-			/**
-			 * @private
-			 * @readonly
-			 * @member {Function} _source
-			 * @memberOf HB.Template#
-			 */
-			this.define("_source", new Function(source));
-
-			/**
-			 * @private
-			 * @readonly
-			 * @member {Range} _range
-			 * @memberOf HB.Template#
-			 */
-			this.define("_range", document.createRange());
-		}
-
-		/**
-		 * @public
-		 * @param {?Object} [data]
-		 * @returns {DocumentFragment}
-		 */
-		render(data) {
-			return this._range.createContextualFragment(this._source.call(data));
-		}
-	}
-
-	/**
-	 * @private
 	 * @class Route
 	 */
 	class Route {
 
 		/**
 		 * Route constructor.
-		 * @param {string} handle
-		 * @param {RouteCallback} callback
+		 * @param {string} route
+		 * @param {Route~Callback} callback
 		 * @param {boolean} [last = false]
 		 */
-		constructor(handle, callback, last) {
-			const regExp = /\((\/:[a-z]+)\)\?/g;
+		constructor(route, callback, last) {
+			const patternOpt = /\((\/:[a-z]+)\)\?/g,
+			      replaceOpt = "(?:$1)?";
 
-			if (regExp.test(handle)) {
-				handle = handle.replace(regExp, "(?:$1)?");
-			}
+			const patternVal = /:[a-z]+/g,
+			      replaceVal = "([a-zA-Z0-9\\-._~!$$&'()*,;=:@+%]+)";
 
 			/**
-			 * @public
 			 * @readonly
-			 * @member {string} handle
-			 * @memberOf Route#
+			 * @member {string} Route#name
 			 */
-			this.define("handle", handle);
+			this.define("name", route);
 
 			/**
-			 * @public
 			 * @readonly
-			 * @member {RegExp} pattern
-			 * @memberOf Route#
-			 */
-			this.define("pattern", new RegExp(this.handle.replace(/:[a-z]+/g, "([a-zA-Z0-9\\-._~!$$&'()*,;=:@+%]+)")));
-
-			/**
-			 * @public
-			 * @function callback
-			 * @param {...string} params
-			 * @memberOf Route#
+			 * @member {Route~Callback} Route#callback
 			 */
 			this.define("callback", callback);
 
+			route = route.replace(patternOpt, replaceOpt);
+			route = route.replace(patternVal, replaceVal);
+
 			/**
-			 * @public
 			 * @readonly
-			 * @member {boolean} last
-			 * @memberOf Route#
+			 * @member {RegExp} Route#pattern
+			 */
+			this.define("pattern", new RegExp(route));
+
+			/**
+			 * @readonly
+			 * @member {boolean} Route#last
 			 * @default false
 			 */
 			this.define("last", last || false);
@@ -336,14 +220,13 @@
 	}
 
 	/**
-	 * @callback RouteCallback
+	 * @callback Route~Callback
 	 * @param {...string} params
 	 */
 
 	/**
-	 * Class Router
+	 * @class hb.Router
 	 * @extends Array
-	 * @memberOf HB
 	 */
 	class Router extends Array {
 
@@ -357,18 +240,14 @@
 		}
 
 		/**
-		 * @public
-		 * @param {string} handle
-		 * @param {RouteCallback} callback
+		 * @param {string} route
+		 * @param {Route~Callback} callback
 		 * @param {boolean} [last = false]
 		 */
-		map(handle, callback, last) {
-			super.push(new Route(handle, callback, last));
+		map(route, callback, last) {
+			super.push(new Route(route, callback, last));
 		}
 
-		/**
-		 * @public
-		 */
 		match() {
 			const hash = `/${location.hash.substr(3)}`;
 
@@ -386,7 +265,7 @@
 
 				matches = matches.map(Router.decode);
 
-				console.info("Router: %s", route.handle, matches);
+				console.info("Router: %s", route.name, matches);
 
 				route.callback(...matches);
 
@@ -397,7 +276,6 @@
 		}
 
 		/**
-		 * @public
 		 * @param {string} x
 		 * @returns {string}
 		 */
@@ -406,7 +284,6 @@
 		}
 
 		/**
-		 * @public
 		 * @param {string} x
 		 * @returns {string}
 		 */
@@ -416,14 +293,12 @@
 	}
 
 	/**
-	 * Class Client
-	 * @extends HB.EventTarget
-	 * @memberOf HB
+	 * @class hb.Client
+	 * @extends hb.EventDispatcher
 	 */
-	class Client extends EventTarget {
+	class Client extends EventDispatcher {
 
 		/**
-		 * @public
 		 * @type {boolean}
 		 */
 		get ready() {
@@ -431,7 +306,6 @@
 		}
 
 		/**
-		 * @public
 		 * @type {number}
 		 */
 		get timeout() {
@@ -439,7 +313,6 @@
 		}
 
 		/**
-		 * @public
 		 * @type {number}
 		 */
 		set timeout(value) {
@@ -460,24 +333,21 @@
 			/**
 			 * @private
 			 * @readonly
-			 * @member {Element[]} _targets
-			 * @memberOf HB.Client#
+			 * @member {Array.<Element>} hb.Client#_targets
 			 */
 			this.define("_targets", []);
 
 			/**
 			 * @private
 			 * @readonly
-			 * @member {string} _accept
-			 * @memberOf HB.Client#
+			 * @member {string} hb.Client#_accept
 			 * @default "application/json"
 			 */
 			this.define("_accept", accept);
 
 			/**
 			 * @private
-			 * @member {boolean} _ready
-			 * @memberOf HB.Client#
+			 * @member {boolean} hb.Client#_ready
 			 * @default true
 			 */
 			this.define("_ready", true, true);
@@ -485,19 +355,13 @@
 			/**
 			 * @private
 			 * @readonly
-			 * @member {XMLHttpRequest} _xhr
-			 * @memberOf HB.Client#
+			 * @member {XMLHttpRequest} hb.Client#_xhr
 			 */
 			this.define("_xhr", new XMLHttpRequest());
 
 			this._xhr.responseType = type;
 
-			this._xhr.addEventListener("timeout", () => {
-				this._ready = true;
-				this._targets.forEach(x => x.removeAttribute("loading"));
-				this.dispatch("timeout", this._targets);
-			}, false);
-
+			this._xhr.addEventListener("timeout", () => this._timeout(), false);
 			this._xhr.addEventListener("load", () => this._load(), false);
 			this._xhr.addEventListener("error", () => this._error(), false);
 
@@ -508,11 +372,27 @@
 
 		/**
 		 * @private
-		 * @fires HB.Client~loaded
-		 * @fires HB.Client~error
+		 * @fires hb.Client~timeout
+		 * @fires hb.Client~ready
+		 */
+		_timeout() {
+			this._ready = true;
+
+			this._targets.forEach(x => x.removeAttribute("loading"));
+
+			this.dispatch("timeout", this._targets);
+			this.dispatch("ready", this._targets);
+		}
+
+		/**
+		 * @private
+		 * @fires hb.Client~loaded
+		 * @fires hb.Client~error
+		 * @fires hb.Client~ready
 		 */
 		_load() {
 			this._ready = true;
+
 			this._targets.forEach(x => x.removeAttribute("loading"));
 
 			if (this._xhr.status < 400) {
@@ -523,32 +403,38 @@
 					message: this._xhr.statusText
 				}, this._targets);
 			}
+
+			this.dispatch("ready", this._targets);
 		}
 
 		/**
 		 * @private
-		 * @fires HB.Client~error
+		 * @fires hb.Client~error
+		 * @fires hb.Client~ready
 		 */
 		_error() {
 			this._ready = true;
+
 			this._targets.forEach(x => x.removeAttribute("loading"));
 
 			this.dispatch("error", {
 				code: 523,
 				message: "Disconnected"
 			}, this._targets);
+
+			this.dispatch("ready", this._targets);
 		}
 
 		/**
-		 * @public
 		 * @param {string} method
 		 * @param {string} url
 		 * @param {?Object} [params = null]
-		 * @param {?Element[]} [targets = null]
-		 * @fires HB.Client~timeout
-		 * @fires HB.Client~loaded
-		 * @fires HB.Client~error
-		 * @fires HB.Client~progress
+		 * @param {?Array.<Element>} [targets = null]
+		 * @fires hb.Client~timeout
+		 * @fires hb.Client~loaded
+		 * @fires hb.Client~error
+		 * @fires hb.Client~progress
+		 * @fires hb.Client~ready
 		 */
 		request(method, url, params, targets) {
 			params  = params || null;
@@ -587,7 +473,6 @@
 		}
 
 		/**
-		 * @public
 		 * @param {string} x
 		 * @returns {string}
 		 */
@@ -596,7 +481,6 @@
 		}
 
 		/**
-		 * @public
 		 * @param {string} x
 		 * @returns {string}
 		 */
@@ -605,7 +489,6 @@
 		}
 
 		/**
-		 * @public
 		 * @param {Object} p
 		 * @returns {string}
 		 */
@@ -615,72 +498,160 @@
 	}
 
 	/**
-	 * @public
-	 * @memberOf HB.Client~
-	 * @callback TimeoutHandler
-	 * @param {?Element[]} targets
+	 * @callback hb.Client~EventHandler
+	 * @param {?Array.<Element>} targets
 	 */
 
 	/**
-	 * @public
-	 * @memberOf HB.Client~
-	 * @callback DataHandler
+	 * @callback hb.Client~DataHandler
 	 * @param {?Object} data
-	 * @param {?Element[]} targets
+	 * @param {?Array.<Element>} targets
 	 */
 
 	/**
-	 * @public
-	 * @memberOf HB.Client~
-	 * @callback ProgressHandler
+	 * @callback hb.Client~ProgressHandler
 	 * @param {number} loaded - Number of bytes transferred
 	 * @param {number} total - Total number of bytes
 	 */
 
 	/**
-	 * @public
-	 * @memberOf HB.Client~
-	 * @event timeout
-	 * @type {HB.Client~TimeoutHandler}
+	 * @event hb.Client~timeout
+	 * @type {hb.Client~EventHandler}
 	 */
 
 	/**
-	 * @public
-	 * @memberOf HB.Client~
-	 * @event loaded
-	 * @type {HB.Client~DataHandler}
+	 * @event hb.Client~loaded
+	 * @type {hb.Client~DataHandler}
 	 */
 
 	/**
-	 * @public
-	 * @memberOf HB.Client~
-	 * @event error
-	 * @type {HB.Client~DataHandler}
+	 * @event hb.Client~error
+	 * @type {hb.Client~DataHandler}
 	 */
 
 	/**
-	 * @public
-	 * @memberOf HB.Client~
-	 * @event progress
-	 * @type {HB.Client~ProgressHandler}
+	 * @event hb.Client~progress
+	 * @type {hb.Client~ProgressHandler}
 	 */
 
 	/**
-	 * Class Showable
-	 * @extends HB.EventTarget
-	 * @abstract
-	 * @memberOf HB
+	 * @event hb.Client~ready
+	 * @type {hb.Client~EventHandler}
 	 */
-	class Showable extends EventTarget {
+
+	/**
+	 * @class hb.Template
+	 */
+	class Template {
 
 		/**
-		 * @public
+		 * Template constructor.
+		 * @param {HTMLTemplateElement} element
+		 */
+		constructor(element) {
+			let source = element.innerHTML;
+
+			source = source.replace(/\s{2,}/g, "");
+			source = source.replace(/{{(.*?)}}/g, "',$1,'");
+			source = source.split("{%").join("');");
+			source = source.split("%}").join("a.push('");
+			source = `const a=[];a.push('${source}');return a.join('');`;
+
+			/**
+			 * @private
+			 * @readonly
+			 * @member {Function} hb.Template#_source
+			 */
+			this.define("_source", new Function(source));
+
+			/**
+			 * @private
+			 * @readonly
+			 * @member {Range} hb.Template#_range
+			 */
+			this.define("_range", document.createRange());
+		}
+
+		/**
+		 * @param {?Object} [data]
+		 * @returns {DocumentFragment}
+		 */
+		render(data) {
+			return this._range.createContextualFragment(this._source.call(data));
+		}
+	}
+
+	/**
+	 * @class hb.Timer
+	 * @extends hb.EventDispatcher
+	 */
+	class Timer extends EventDispatcher {
+
+		/**
+		 * Timer constructor.
+		 */
+		constructor() {
+			super();
+
+			/**
+			 * @private
+			 * @member {?number} hb.Timer#_id
+			 * @default null
+			 */
+			this.define("_id", null, true);
+		}
+
+		/**
+		 * @param {number} seconds
+		 * @fires hb.Timer~started
+		 * @fires hb.Timer~ended
+		 */
+		start(seconds) {
+			this.stop();
+
+			this.dispatch("started");
+
+			this._id = window.setTimeout(() => {
+				this.dispatch("ended");
+				this._id = null;
+			}, seconds * 1000);
+		}
+
+		/**
+		 * @fires hb.Timer~stopped
+		 */
+		stop() {
+			if (this._id === null) {
+				return;
+			}
+
+			window.clearTimeout(this._id);
+
+			this.dispatch("stopped");
+
+			this._id = null;
+		}
+	}
+
+	/** @event hb.Timer~started */
+
+	/** @event hb.Timer~ended */
+
+	/** @event hb.Timer~stopped */
+
+	/**
+	 * @class hb.Showable
+	 * @extends hb.EventDispatcher
+	 * @abstract
+	 */
+	class Showable extends EventDispatcher {
+
+		/**
 		 * @type {boolean}
 		 */
 		get open() { return this.element.hasAttribute("open"); }
 
 		/**
-		 * @public
 		 * @type {boolean}
 		 */
 		set open(value) {
@@ -699,51 +670,27 @@
 			super();
 
 			/**
-			 * @public
 			 * @readonly
-			 * @member {Element} element
-			 * @memberOf HB.Showable#
+			 * @member {Element} hb.Showable#element
 			 */
 			this.define("element", element);
 		}
 
-		/**
-		 * @public
-		 */
 		show() {
 			this.open = true;
 		}
 
-		/**
-		 * @public
-		 */
 		close() {
 			this.open = false;
 		}
 	}
 
-	/** @namespace HB */
-	window.define("HB", {});
+	hb.define("EventDispatcher", EventDispatcher);
+	hb.define("Timer", Timer);
+	hb.define("Template", Template);
+	hb.define("Router", Router);
+	hb.define("Client", Client);
+	hb.define("Showable", Showable);
 
-	window.HB.define("uuid", () => {
-		const uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
-
-		return uuid.replace(/[xy]/g, function (i) {
-			let r = (Math.random() * 16) | 0;
-
-			if (i === "y") {
-				r = (r & 3) | 8;
-			}
-
-			return r.toString(16);
-		});
-	});
-
-	window.HB.define("Event", Event);
-	window.HB.define("EventTarget", EventTarget);
-	window.HB.define("Timer", Timer);
-	window.HB.define("Template", Template);
-	window.HB.define("Router", Router);
-	window.HB.define("Client", Client);
-	window.HB.define("Showable", Showable);
-})(this);
+	window.define("hb", hb);
+})(window);

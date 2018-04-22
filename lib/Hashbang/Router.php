@@ -72,7 +72,7 @@ namespace Hashbang
 				return Response::notFound();
 			}
 
-			/** @var Response|null $response */
+			/** @var Response $response */
 			$response = null;
 
 			try

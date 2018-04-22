@@ -12,9 +12,9 @@ namespace Hashbang
 	{
 		/**
 		 * ResponseException constructor.
-		 * @param int            $code
-		 * @param string         $message
-		 * @param Throwable|null $previous
+		 * @param int       $code
+		 * @param string    $message
+		 * @param Throwable $previous = null
 		 */
 		public function __construct(int $code, string $message, Throwable $previous = null)
 		{

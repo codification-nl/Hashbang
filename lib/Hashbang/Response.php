@@ -57,7 +57,7 @@ namespace Hashbang
 		private $message;
 
 		/**
-		 * @var array|null
+		 * @var array
 		 */
 		private $data = null;
 
@@ -89,7 +89,7 @@ namespace Hashbang
 		 * Response constructor.
 		 * @param int    $code
 		 * @param string $message
-		 * @param mixed  $data
+		 * @param mixed  $data = null
 		 */
 		public function __construct(int $code, string $message, $data = null)
 		{
@@ -169,7 +169,7 @@ namespace Hashbang
 		}
 
 		/**
-		 * @param mixed $data
+		 * @param mixed $data = null
 		 * @return Response
 		 */
 		public static function ok($data = null) : Response
@@ -178,7 +178,7 @@ namespace Hashbang
 		}
 
 		/**
-		 * @param mixed $data
+		 * @param mixed $data = null
 		 * @return Response
 		 */
 		public static function created($data = null) : Response
@@ -187,7 +187,7 @@ namespace Hashbang
 		}
 
 		/**
-		 * @param mixed $data
+		 * @param mixed $data = null
 		 * @return Response
 		 */
 		public static function accepted($data = null) : Response
@@ -196,7 +196,7 @@ namespace Hashbang
 		}
 
 		/**
-		 * @param mixed $data
+		 * @param mixed $data = null
 		 * @return Response
 		 */
 		public static function noContent($data = null) : Response
@@ -205,7 +205,7 @@ namespace Hashbang
 		}
 
 		/**
-		 * @param mixed $data
+		 * @param mixed $data = null
 		 * @return Response
 		 */
 		public static function seeOther($data = null) : Response
@@ -214,7 +214,7 @@ namespace Hashbang
 		}
 
 		/**
-		 * @param mixed $data
+		 * @param mixed $data = null
 		 * @return Response
 		 */
 		public static function notModified($data = null) : Response
@@ -223,7 +223,7 @@ namespace Hashbang
 		}
 
 		/**
-		 * @param mixed $data
+		 * @param mixed $data = null
 		 * @return Response
 		 */
 		public static function badRequest($data = null) : Response
@@ -232,7 +232,7 @@ namespace Hashbang
 		}
 
 		/**
-		 * @param mixed $data
+		 * @param mixed $data = null
 		 * @return Response
 		 */
 		public static function unauthorized($data = null) : Response
@@ -241,7 +241,7 @@ namespace Hashbang
 		}
 
 		/**
-		 * @param mixed $data
+		 * @param mixed $data = null
 		 * @return Response
 		 */
 		public static function forbidden($data = null) : Response
@@ -250,7 +250,7 @@ namespace Hashbang
 		}
 
 		/**
-		 * @param mixed $data
+		 * @param mixed $data = null
 		 * @return Response
 		 */
 		public static function notFound($data = null) : Response
@@ -259,7 +259,7 @@ namespace Hashbang
 		}
 
 		/**
-		 * @param mixed $data
+		 * @param mixed $data = null
 		 * @return Response
 		 */
 		public static function methodNotAllowed($data = null) : Response
@@ -268,7 +268,7 @@ namespace Hashbang
 		}
 
 		/**
-		 * @param mixed $data
+		 * @param mixed $data = null
 		 * @return Response
 		 */
 		public static function tooManyRequests($data = null) : Response
@@ -277,7 +277,7 @@ namespace Hashbang
 		}
 
 		/**
-		 * @param mixed $data
+		 * @param mixed $data = null
 		 * @return Response
 		 */
 		public static function error($data = null) : Response

@@ -10,21 +10,23 @@ namespace Hashbang
 	{
 		/**
 		 * Session constructor.
-		 * @param string $name
-		 * @param int    $lifetime
+		 * @param bool   $secure = true
+		 * @param string $name = 'session'
+		 * @param int    $lifetime = 604800
 		 */
-		public function __construct(string $name = 'session', int $lifetime = 604800)
+		public function __construct(bool $secure = true, string $name = 'session', int $lifetime = 604800)
 		{
 			if (session_status() === PHP_SESSION_ACTIVE)
 			{
 				return;
 			}
 
-			/** @noinspection SpellCheckingInspection */
 			session_start([
 				'name'                   => $name,
 				'gc_maxlifetime'         => $lifetime,
 				'cookie_lifetime'        => $lifetime,
+				'cookie_secure'          => $secure,
+				'cookie_httponly'        => true,
 				'use_strict_mode'        => true,
 				'sid_length'             => 32,
 				'sid_bits_per_character' => 6,

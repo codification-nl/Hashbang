@@ -14,7 +14,7 @@ namespace Hashbang
 		public const ERROR_MESSAGE = 'database error';
 
 		/**
-		 * @var PDO|null
+		 * @var PDO
 		 */
 		private $connection = null;
 
@@ -135,7 +135,7 @@ namespace Hashbang
 		}
 
 		/**
-		 * @param string $name
+		 * @param string $name = 'id'
 		 * @return int
 		 * @throws ResponseException
 		 */
@@ -154,9 +154,9 @@ namespace Hashbang
 		}
 
 		/**
-		 * @param string     $sql
-		 * @param array|null $params
-		 * @return null|PDOStatement
+		 * @param string $sql
+		 * @param array  $params = null
+		 * @return PDOStatement|null
 		 * @throws ResponseException
 		 */
 		public function run(string $sql, array $params = null) : ?PDOStatement

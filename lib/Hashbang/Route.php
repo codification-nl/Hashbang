@@ -10,8 +10,21 @@ namespace Hashbang
 	 */
 	class Route implements ArrayAccess
 	{
-		private const OPTIONAL = '`\((\/:[a-z]+)\)\?`';
-		private const PATTERN  = '`:[a-z]+`';
+		private const PATTERN_OPTIONAL = '`\((\/:[a-z]+)\)\?`';
+		private const REPLACE_OPTIONAL = '(?:$1)?';
+
+		private const PATTERN_VALUE = '`:[a-z]+`';
+		private const REPLACE_VALUE = '([a-zA-Z0-9\\-._]+)';
+
+		/**
+		 * @var string
+		 */
+		private $name;
+
+		/**
+		 * @var callable[]
+		 */
+		private $methods;
 
 		/**
 		 * @var string
@@ -19,9 +32,12 @@ namespace Hashbang
 		private $pattern;
 
 		/**
-		 * @var callable[]
+		 * @return string
 		 */
-		private $methods;
+		public function getName() : string
+		{
+			return $this->name;
+		}
 
 		/**
 		 * @return string
@@ -34,15 +50,17 @@ namespace Hashbang
 		/**
 		 * Route constructor.
 		 * @param string     $route
-		 * @param callable[] $methods
+		 * @param callable[] $methods = []
 		 */
 		public function __construct(string $route, array $methods = [])
 		{
-			$route = preg_replace(Route::OPTIONAL, '(?:$1)?', $route);
-			$route = preg_replace(Route::PATTERN, '([a-zA-Z0-9\\-._]+)', $route);
+			$this->name    = $route;
+			$this->methods = $methods;
+
+			$route = preg_replace(Route::PATTERN_OPTIONAL, Route::REPLACE_OPTIONAL, $route);
+			$route = preg_replace(Route::PATTERN_VALUE, Route::REPLACE_VALUE, $route);
 
 			$this->pattern = "`$route`";
-			$this->methods = $methods;
 		}
 
 		/**
