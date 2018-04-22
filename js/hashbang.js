@@ -9,8 +9,8 @@
 (window => {
 	"use strict";
 
-	const document = window.document,
-	      location = window.location;
+	const document = window.document;
+	const location = window.location;
 
 	Object.defineProperty(Object.prototype, "define", {
 		value: function (property, value, writable) {
@@ -81,13 +81,17 @@
 		}
 	});
 
-	if (Math.clamp === undefined) {
+	if (!("clamp" in Math)) {
 		Math.define("clamp", (x, a, b) => Math.min(Math.max(+x, +a), +b));
 	}
 
 	/** @namespace HB */
 	const hb = {};
 
+	/**
+	 * @function hb.uuid
+	 * @returns {string}
+	 */
 	hb.define("uuid", () => {
 		const uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
 
@@ -101,7 +105,6 @@
 			return r.toString(16);
 		});
 	});
-
 
 	/**
 	 * @class Event
@@ -183,11 +186,11 @@
 		 * @param {boolean} [last = false]
 		 */
 		constructor(route, callback, last) {
-			const patternOpt = /\((\/:[a-z]+)\)\?/g,
-			      replaceOpt = "(?:$1)?";
+			const patternOpt = /\((\/:[a-z]+)\)\?/g;
+			const replaceOpt = "(?:$1)?";
 
-			const patternVal = /:[a-z]+/g,
-			      replaceVal = "([a-zA-Z0-9\\-._~!$$&'()*,;=:@+%]+)";
+			const patternVal = /:[a-z]+/g;
+			const replaceVal = "([a-zA-Z0-9\\-._~!$$&'()*,;=:@+%]+)";
 
 			/**
 			 * @readonly
@@ -365,8 +368,8 @@
 			this._xhr.addEventListener("load", () => this._load(), false);
 			this._xhr.addEventListener("error", () => this._error(), false);
 
-			this._xhr.addEventListener("progress", e => {
-				this.dispatch("progress", e.loaded, e.total);
+			this._xhr.addEventListener("progress", event => {
+				this.dispatch("progress", event.loaded, event.total);
 			}, false);
 		}
 
@@ -429,16 +432,15 @@
 		 * @param {string} method
 		 * @param {string} url
 		 * @param {?Object} [params = null]
-		 * @param {?Array.<Element>} [targets = null]
+		 * @param {...Element} [targets]
 		 * @fires hb.Client~timeout
 		 * @fires hb.Client~loaded
 		 * @fires hb.Client~error
 		 * @fires hb.Client~progress
 		 * @fires hb.Client~ready
 		 */
-		request(method, url, params, targets) {
-			params  = params || null;
-			targets = targets || null;
+		request(method, url, params, ...targets) {
+			params = params || null;
 
 			console.info("Client: %s %s", method, url, params);
 
@@ -461,10 +463,7 @@
 				this._xhr.setRequestHeader("Content-Type", "application/json");
 			}
 
-			if (targets !== null) {
-				this._targets.push(...targets);
-			}
-
+			this._targets.push(...targets);
 			this._targets.forEach(x => x.addAttribute("loading"));
 
 			this._xhr.send(method !== "GET" ? params : null);

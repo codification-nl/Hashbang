@@ -139,16 +139,6 @@ namespace Hashbang
 			echo $response;
 		}
 
-		public static function isLocalhost()
-		{
-			$whitelist = [
-				'127.0.0.1',
-				'::1',
-			];
-
-			return in_array($_SERVER['REMOTE_ADDR'], $whitelist);
-		}
-
 		/**
 		 * @param Logger $logger
 		 */
