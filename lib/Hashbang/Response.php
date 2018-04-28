@@ -142,7 +142,7 @@ namespace Hashbang
 
 			header("$http $this->code $code");
 
-			header("Content-Type: $type");
+			header("Content-Type: $this->type");
 			header('Cache-Control: no-cache');
 		}
 
