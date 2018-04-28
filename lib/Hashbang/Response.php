@@ -49,17 +49,22 @@ namespace Hashbang
 		/**
 		 * @var int
 		 */
-		private $code;
+		protected $code;
 
 		/**
 		 * @var string
 		 */
-		private $message;
+		protected $message;
 
 		/**
 		 * @var array
 		 */
-		private $data = null;
+		protected $data = null;
+
+		/**
+		 * @var string
+		 */
+		protected $type = 'application/json';
 
 		/**
 		 * @return int
@@ -137,7 +142,7 @@ namespace Hashbang
 
 			header("$http $this->code $code");
 
-			header('Content-Type: application/json');
+			header("Content-Type: $type");
 			header('Cache-Control: no-cache');
 		}
 
