@@ -538,30 +538,73 @@
 	 * @type {hb.Client~EventHandler}
 	 */
 
+	/** @type {RegExp} @memberOf hb.Template~ */ const patternControl     = /{%\s*.+?\s*%}/;
+	/** @type {RegExp} @memberOf hb.Template~ */ const patternFor         = /{%\s*for\s+(.+?)\s+in\s+(.+?)\s*%}/;
+	/** @type {RegExp} @memberOf hb.Template~ */ const patternMarkers     = /{{\s*(.+?)(?:\|(.+?))?\s*}}/g;
+	/** @type {RegExp} @memberOf hb.Template~ */ const patternFnSignature = /(.+?)\((.*?)\)/;
+	/** @type {RegExp} @memberOf hb.Template~ */ const patternTokens      = /{(\d+)}/g;
+	/** @type {RegExp} @memberOf hb.Template~ */ const patternFnParams    = /\s*,\s*/;
+
 	/**
 	 * @class hb.Template
 	 */
 	class Template {
 
 		/**
+		 * @type {number}
+		 */
+		static get NONE() {
+			return -1;
+		}
+
+		/**
+		 * @type {number}
+		 */
+		static get MARKER() {
+			return 0;
+		}
+
+		/**
+		 * @type {number}
+		 */
+		static get FOR() {
+			return 1;
+		}
+
+		/**
+		 * @private
+		 * @type {string}
+		 */
+		get _current() {
+			return `{${this._.length}}`;
+		}
+
+		/**
 		 * Template constructor.
 		 * @param {HTMLTemplateElement} element
 		 */
 		constructor(element) {
-			let source = element.innerHTML;
-
-			source = source.replace(/\s{2,}/g, "");
-			source = source.replace(/{{(.*?)}}/g, "',$1,'");
-			source = source.split("{%").join("');");
-			source = source.split("%}").join("a.push('");
-			source = `const a=[];a.push('${source}');return a.join('');`;
 
 			/**
 			 * @private
 			 * @readonly
-			 * @member {Function} hb.Template#_source
+			 * @member {Array.<Object>} hb.Template#_
 			 */
-			this.define("_source", new Function(source));
+			this.define("_", []);
+
+			/**
+			 * @private
+			 * @readonly
+			 * @member {string} hb.Template#_source
+			 */
+			this.define("_source", this._parse(element.innerHTML));
+
+			/**
+			 * @private
+			 * @readonly
+			 * @member {Object} hb.Template#_fn
+			 */
+			this.define("_fn", {});
 
 			/**
 			 * @private
@@ -572,11 +615,189 @@
 		}
 
 		/**
+		 * @param {string} name
+		 * @param {Function} fn
+		 */
+		fn(name, fn) {
+			this._fn.define(name, fn);
+		}
+
+		/**
+		 * @private
+		 * @param {string} source
+		 * @returns {string}
+		 */
+		_parseMarkers(source) {
+			return source.replace(patternMarkers, (_, $, fn) => {
+				const token = this._current;
+
+				this._.push({
+					$: $,
+					fn: fn || null,
+					type: Template.MARKER
+				});
+
+				return token;
+			});
+		}
+
+		/**
+		 * @private
+		 * @param {string} source
+		 * @param {number} [cursor = 0]
+		 * @param {number} [begin]
+		 * @param {Array.<string>} [matches]
+		 * @returns {string}
+		 */
+		_parseControls(source, cursor, begin, matches) {
+			cursor = cursor || 0;
+
+			let from = cursor;
+
+			let control;
+
+			while ((control = source.slice(cursor).match(patternControl)) !== null) {
+				control = control[0];
+
+				cursor = source.indexOf(control, cursor);
+
+				let token = this._current;
+				let end   = cursor + control.length;
+
+				switch (control) {
+					case "{% endfor %}": {
+						this._.push({
+							$: source.slice(from, cursor),
+							var: matches[1],
+							in: matches[2],
+							type: Template.FOR
+						});
+
+						return source.substr(0, begin) + token + source.substr(end);
+					}
+				}
+
+				let m;
+
+				if ((m = control.match(patternFor)) !== null) {
+					source = this._parseControls(source, end, cursor, m);
+				}
+
+				cursor += token.length;
+			}
+
+			return source;
+		}
+
+		/**
+		 * @private
+		 * @param {string} source
+		 * @returns {string}
+		 */
+		_parse(source) {
+			source = source.replace(/\s{2,}/g, "");
+
+			source = this._parseMarkers(source);
+			source = this._parseControls(source);
+
+			return source;
+		}
+
+		/**
+		 * @private
+		 * @param {string} $
+		 * @param {Object} data
+		 * @returns {*}
+		 */
+		static _reduce($, data) {
+			let result = data;
+
+			const parts = $.split(".");
+
+			for (let i = 0; i < parts.length; i++) {
+				result = result[parts[i]];
+
+				if (!result) {
+					return "";
+				}
+			}
+
+			return result;
+		}
+
+		/**
+		 * @private
+		 * @param {Object} token
+		 * @param {Object} data
+		 * @returns {string}
+		 */
+		_processMarker(token, data) {
+			let $  = Template._reduce(token.$, data);
+			let fn = token.fn;
+
+			if (fn === null) {
+				return $;
+			}
+
+			let signature = fn.match(patternFnSignature);
+
+			if (signature !== null) {
+				fn = signature[1];
+			}
+
+			fn = this._fn[fn];
+
+			if (fn && fn instanceof Function) {
+				const params = [$];
+
+				if (signature !== null) {
+					params.push(...signature[2].split(patternFnParams));
+				}
+
+				$ = fn(...params);
+			}
+
+			return $;
+		}
+
+		/**
+		 * @private
+		 * @param {string} source
+		 * @param {Object} data
+		 * @returns {string}
+		 */
+		_process(source, data) {
+			return source.replace(patternTokens, (_, index) => {
+				const token = this._[index | 0];
+
+				let result = "";
+
+				switch (token.type) {
+					case Template.MARKER:
+						return this._processMarker(token, data);
+
+					case Template.FOR:
+						const $$ = Template._reduce(token.in, data);
+
+						for (let i in $$) {
+							if ($$.hasOwnProperty(i)) {
+								result += this._process(token.$, { [token.var]: $$[i] });
+							}
+						}
+
+						break;
+				}
+
+				return result;
+			});
+		}
+
+		/**
 		 * @param {?Object} [data]
 		 * @returns {DocumentFragment}
 		 */
 		render(data) {
-			return this._range.createContextualFragment(this._source.call(data));
+			return this._range.createContextualFragment(this._process(this._source, data));
 		}
 	}
 
