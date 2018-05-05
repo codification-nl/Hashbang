@@ -12,6 +12,8 @@ namespace Hashbang
 	 */
 	class Response implements JsonSerializable
 	{
+		public const JSON = 'application/json';
+
 		public const OK                  = 200;
 		public const CREATED             = 201;
 		public const ACCEPTED            = 202;
@@ -62,9 +64,9 @@ namespace Hashbang
 		protected $data = null;
 
 		/**
-		 * @var string
+		 * @var array
 		 */
-		protected $type = 'application/json';
+		protected $headers = [];
 
 		/**
 		 * @return int
@@ -116,6 +118,9 @@ namespace Hashbang
 			{
 				$this->data = $data;
 			}
+
+			$this->headers['Cache-Control'] = 'no-store';
+			$this->headers['Content-Type']  = Response::JSON;
 		}
 
 		/**
@@ -142,8 +147,10 @@ namespace Hashbang
 
 			header("$http $this->code $code");
 
-			header("Content-Type: $this->type");
-			header('Cache-Control: no-cache');
+			array_walk($this->headers, function ($value, $key)
+				{
+					header("$key: $value");
+				});
 		}
 
 		/**

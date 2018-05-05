@@ -716,10 +716,6 @@
 
 			for (let i = 0; i < parts.length; i++) {
 				result = result[parts[i]];
-
-				if (!result) {
-					return "";
-				}
 			}
 
 			return result;
