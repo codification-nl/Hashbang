@@ -68,7 +68,7 @@ namespace Hashbang
 		 * @param string[] &$params
 		 * @return bool
 		 */
-		public function preg_match(string $route, array &$params) : bool
+		public function match(string $route, array &$params) : bool
 		{
 			if (preg_match($this->pattern, $route, $params) !== 1)
 			{

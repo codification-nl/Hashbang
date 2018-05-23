@@ -110,7 +110,6 @@
 	 * @class Event
 	 */
 	class Event {
-
 		/**
 		 * Event constructor.
 		 * @param {string} type
@@ -140,7 +139,6 @@
 	 * @class hb.EventDispatcher
 	 */
 	class EventDispatcher {
-
 		/**
 		 * EventDispatcher constructor.
 		 */
@@ -175,10 +173,78 @@
 	}
 
 	/**
+	 * @class hb.Cookie
+	 */
+	class Cookie {
+		/**
+		 * @param {string} name
+		 */
+		static get(name) {
+			return document.cookie.split("; ").reduce((result, cookie) => {
+				const [key, ...values] = cookie.split("=");
+
+				if (key === name) {
+					return window.decodeURIComponent(values.join("="));
+				}
+
+				return result;
+			}, null);
+		}
+
+		/**
+		 * @param {hb.Cookie~Cookie} [params]
+		 * @param {boolean} [secure]
+		 */
+		static set(params, secure) {
+			params.value = window.encodeURIComponent(params.value);
+
+			const expires = params.expires;
+
+			if (expires !== undefined && expires.constructor !== String) {
+				params.expires = Cookie.expires(expires);
+			}
+
+			const cookie = Object.keys(params).map(i => `${i}=${params[i]}`);
+
+			if (secure) {
+				cookie.push("secure");
+			}
+
+			document.cookie = cookie.join("; ");
+		}
+
+		/**
+		 * @param {Date|number} expires
+		 * @returns {string}
+		 */
+		static expires(expires) {
+			if (expires.constructor !== Date) {
+				expires = new Date(Date.now() + expires);
+			}
+
+			return expires.toUTCString();
+		}
+	}
+
+	/**
+	 * @typedef {Object} hb.Cookie~Cookie
+	 * @property {string} name
+	 * @property {string} value
+	 * @property {number|string|Date} [expires]
+	 * @property {string} [path]
+	 * @property {string} [domain]
+	 */
+
+	/** @type {RegExp} @memberOf Route~ */ const patternOpt = /\((\/:[a-z]+)\)\?/g;
+	/** @type {string} @memberOf Route~ */ const replaceOpt = "(?:$1)?";
+
+	/** @type {RegExp} @memberOf Route~ */ const patternVal = /:[a-z]+/g;
+	/** @type {string} @memberOf Route~ */ const replaceVal = "([a-zA-Z0-9\\-._~!$$&'()*,;=:@+%]+)";
+
+	/**
 	 * @class Route
 	 */
 	class Route {
-
 		/**
 		 * Route constructor.
 		 * @param {string} route
@@ -186,12 +252,6 @@
 		 * @param {boolean} [last = false]
 		 */
 		constructor(route, callback, last) {
-			const patternOpt = /\((\/:[a-z]+)\)\?/g;
-			const replaceOpt = "(?:$1)?";
-
-			const patternVal = /:[a-z]+/g;
-			const replaceVal = "([a-zA-Z0-9\\-._~!$$&'()*,;=:@+%]+)";
-
 			/**
 			 * @readonly
 			 * @member {string} Route#name
@@ -232,7 +292,6 @@
 	 * @extends Array
 	 */
 	class Router extends Array {
-
 		/**
 		 * Router constructor.
 		 */
@@ -300,7 +359,6 @@
 	 * @extends hb.EventDispatcher
 	 */
 	class Client extends EventDispatcher {
-
 		/**
 		 * @type {boolean}
 		 */
@@ -432,6 +490,7 @@
 		 * @param {string} method
 		 * @param {string} url
 		 * @param {?Object} [params = null]
+		 * @param {?Object} [headers = null]
 		 * @param {...Element} [targets]
 		 * @fires hb.Client~timeout
 		 * @fires hb.Client~loaded
@@ -439,34 +498,40 @@
 		 * @fires hb.Client~progress
 		 * @fires hb.Client~ready
 		 */
-		request(method, url, params, ...targets) {
-			params = params || null;
+		request(method, url, params, headers, ...targets) {
+			params  = params || null;
+			headers = headers || {};
 
-			console.info("Client: %s %s", method, url, params);
+			headers["Accept"] = this._accept;
+
+			if (params !== null) {
+				switch (method) {
+					case "GET":
+						url += `?${Client.query(params)}`;
+						params = null;
+						break;
+
+					default:
+						headers["Content-Type"] = "application/json";
+						break;
+				}
+			}
+
+			console.info("Client: %s %s", method, url, params, headers);
 
 			this._targets.forEach(x => x.removeAttribute("loading"));
 			this._targets.clear();
 
 			this._xhr.abort();
 
-			if (method === "GET" && params !== null) {
-				url += `?${Client.query(params)}`;
-			}
-
 			this._xhr.open(method, url, true);
 
-			this._xhr.setRequestHeader("Accept", this._accept);
-
-			if (method !== "GET" && params !== null) {
-				params = JSON.stringify(params);
-
-				this._xhr.setRequestHeader("Content-Type", "application/json");
-			}
+			Object.keys(headers).forEach(i => this._xhr.setRequestHeader(i, headers[i]));
 
 			this._targets.push(...targets);
 			this._targets.forEach(x => x.addAttribute("loading"));
 
-			this._xhr.send(method !== "GET" ? params : null);
+			this._xhr.send((params !== null) ? JSON.stringify(params) : null);
 
 			this._ready = false;
 		}
@@ -549,7 +614,6 @@
 	 * @class hb.Template
 	 */
 	class Template {
-
 		/**
 		 * @type {number}
 		 */
@@ -716,6 +780,10 @@
 
 			for (let i = 0; i < parts.length; i++) {
 				result = result[parts[i]];
+
+				if (result === undefined || result === null) {
+					return "";
+				}
 			}
 
 			return result;
@@ -775,11 +843,9 @@
 					case Template.FOR:
 						const $$ = Template._reduce(token.in, data);
 
-						for (let i in $$) {
-							if ($$.hasOwnProperty(i)) {
-								result += this._process(token.$, { [token.var]: $$[i] });
-							}
-						}
+						Object.keys($$).forEach(i => {
+							result += this._process(token.$, { [token.var]: $$[i] });
+						});
 
 						break;
 				}
@@ -802,7 +868,6 @@
 	 * @extends hb.EventDispatcher
 	 */
 	class Timer extends EventDispatcher {
-
 		/**
 		 * Timer constructor.
 		 */
@@ -861,11 +926,12 @@
 	 * @abstract
 	 */
 	class Showable extends EventDispatcher {
-
 		/**
 		 * @type {boolean}
 		 */
-		get open() { return this.element.hasAttribute("open"); }
+		get open() {
+			return this.element.hasAttribute("open");
+		}
 
 		/**
 		 * @type {boolean}
@@ -902,6 +968,7 @@
 	}
 
 	hb.define("EventDispatcher", EventDispatcher);
+	hb.define("Cookie", Cookie);
 	hb.define("Timer", Timer);
 	hb.define("Template", Template);
 	hb.define("Router", Router);

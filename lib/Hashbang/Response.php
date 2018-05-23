@@ -2,7 +2,6 @@
 
 namespace Hashbang
 {
-	use InvalidArgumentException;
 	use JsonSerializable;
 	use stdClass;
 	use Throwable;
@@ -29,24 +28,6 @@ namespace Hashbang
 		public const ERROR               = 500;
 		public const BAD_GATEWAY         = 502;
 		public const SERVICE_UNAVAILABLE = 503;
-
-		public const HTTP_REASON_PHRASE = [
-			Response::OK                  => 'OK',
-			Response::CREATED             => 'Created',
-			Response::ACCEPTED            => 'Accepted',
-			Response::NO_CONTENT          => 'No Content',
-			Response::SEE_OTHER           => 'See Other',
-			Response::NOT_MODIFIED        => 'Not Modified',
-			Response::BAD_REQUEST         => 'Bad Request',
-			Response::UNAUTHORIZED        => 'Unauthorized',
-			Response::FORBIDDEN           => 'Forbidden',
-			Response::NOT_FOUND           => 'Not Found',
-			Response::METHOD_NOT_ALLOWED  => 'Method Not Allowed',
-			Response::TOO_MANY_REQUESTS   => 'Too Many Requests',
-			Response::ERROR               => 'Internal Server Error',
-			Response::BAD_GATEWAY         => 'Bad Gateway',
-			Response::SERVICE_UNAVAILABLE => 'Service Unavailable',
-		];
 
 		/**
 		 * @var int
@@ -100,11 +81,6 @@ namespace Hashbang
 		 */
 		public function __construct(int $code, string $message, $data = null)
 		{
-			if (!isset(Response::HTTP_REASON_PHRASE[$code]))
-			{
-				throw new InvalidArgumentException();
-			}
-
 			$this->code    = $code;
 			$this->message = $message;
 
@@ -142,10 +118,7 @@ namespace Hashbang
 		 */
 		public function sendHeaders() : void
 		{
-			$http = $_SERVER['SERVER_PROTOCOL'];
-			$code = Response::HTTP_REASON_PHRASE[$this->code];
-
-			header("$http $this->code $code");
+			http_response_code($this->code);
 
 			array_walk($this->headers, function ($value, $key)
 				{

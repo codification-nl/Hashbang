@@ -2,9 +2,12 @@
 
 namespace Hashbang
 {
+	use UnexpectedValueException;
+
 	/**
 	 * Class Session
-	 * @property int user
+	 * @property int    user
+	 * @property string token
 	 */
 	class Session
 	{
@@ -13,24 +16,33 @@ namespace Hashbang
 		 * @param bool   $secure = true
 		 * @param string $name = 'session'
 		 * @param int    $lifetime = 604800
+		 * @param string $path = '/'
+		 * @param string $domain = ''
 		 */
-		public function __construct(bool $secure = true, string $name = 'session', int $lifetime = 604800)
+		public function __construct(bool $secure = true, string $name = 'session', int $lifetime = 604800, string $path = '/', string $domain = '')
 		{
 			if (session_status() === PHP_SESSION_ACTIVE)
 			{
 				return;
 			}
 
-			session_start([
+			$options = [
 				'name'                   => $name,
 				'gc_maxlifetime'         => $lifetime,
 				'cookie_lifetime'        => $lifetime,
+				'cookie_path'            => $path,
+				'cookie_domain'          => $domain,
 				'cookie_secure'          => $secure,
 				'cookie_httponly'        => true,
 				'use_strict_mode'        => true,
 				'sid_length'             => 32,
 				'sid_bits_per_character' => 6,
-			]);
+			];
+
+			if (!session_start($options))
+			{
+				throw new UnexpectedValueException();
+			}
 		}
 
 		/**

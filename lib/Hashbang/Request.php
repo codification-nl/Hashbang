@@ -40,6 +40,11 @@ namespace Hashbang
 			return $_GET['route'] ?? null;
 		}
 
+		public static function getToken() : ?string
+		{
+			return $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
+		}
+
 		/**
 		 * @return stdClass|null
 		 */

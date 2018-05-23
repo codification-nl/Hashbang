@@ -39,11 +39,11 @@ namespace Hashbang
 		 * @param string[] &$params
 		 * @return Route|null
 		 */
-		private function preg_match(string $route, array &$params) : ?Route
+		private function find(string $route, array &$params) : ?Route
 		{
 			foreach ($this->routes as $result)
 			{
-				if ($result->preg_match($route, $params))
+				if ($result->match($route, $params))
 				{
 					return $result;
 				}
@@ -65,7 +65,7 @@ namespace Hashbang
 			}
 
 			$params = [];
-			$result = $this->preg_match($route, $params);
+			$result = $this->find($route, $params);
 
 			if ($result === null)
 			{
