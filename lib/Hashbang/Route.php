@@ -60,7 +60,7 @@ namespace Hashbang
 			$route = preg_replace(Route::PATTERN_OPTIONAL, Route::REPLACE_OPTIONAL, $route);
 			$route = preg_replace(Route::PATTERN_VALUE, Route::REPLACE_VALUE, $route);
 
-			$this->pattern = "`$route`";
+			$this->pattern = "`^$route$`";
 		}
 
 		/**

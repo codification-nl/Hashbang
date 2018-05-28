@@ -154,120 +154,133 @@ namespace Hashbang
 		}
 
 		/**
-		 * @param mixed $data = null
+		 * @param mixed  $data = null
+		 * @param string $message = 'ok'
 		 * @return Response
 		 */
-		public static function ok($data = null) : Response
+		public static function ok($data = null, string $message = 'ok') : Response
 		{
-			return new Response(Response::OK, 'ok', $data);
+			return new Response(Response::OK, $message, $data);
 		}
 
 		/**
-		 * @param mixed $data = null
+		 * @param mixed  $data = null
+		 * @param string $message = 'created'
 		 * @return Response
 		 */
-		public static function created($data = null) : Response
+		public static function created($data = null, string $message = 'created') : Response
 		{
-			return new Response(Response::CREATED, 'created', $data);
+			return new Response(Response::CREATED, $message, $data);
 		}
 
 		/**
-		 * @param mixed $data = null
+		 * @param mixed  $data = null
+		 * @param string $message = 'accepted'
 		 * @return Response
 		 */
-		public static function accepted($data = null) : Response
+		public static function accepted($data = null, string $message = 'accepted') : Response
 		{
-			return new Response(Response::ACCEPTED, 'accepted', $data);
+			return new Response(Response::ACCEPTED, $message, $data);
 		}
 
 		/**
-		 * @param mixed $data = null
+		 * @param mixed  $data = null
+		 * @param string $message = 'no content'
 		 * @return Response
 		 */
-		public static function noContent($data = null) : Response
+		public static function noContent($data = null, string $message = 'no content') : Response
 		{
-			return new Response(Response::NO_CONTENT, 'no content', $data);
+			return new Response(Response::NO_CONTENT, $message, $data);
 		}
 
 		/**
-		 * @param mixed $data = null
+		 * @param mixed  $data = null
+		 * @param string $message = 'see other'
 		 * @return Response
 		 */
-		public static function seeOther($data = null) : Response
+		public static function seeOther($data = null, string $message = 'see other') : Response
 		{
-			return new Response(Response::SEE_OTHER, 'see other', $data);
+			return new Response(Response::SEE_OTHER, $message, $data);
 		}
 
 		/**
-		 * @param mixed $data = null
+		 * @param mixed  $data = null
+		 * @param string $message = 'bad request'
 		 * @return Response
 		 */
-		public static function notModified($data = null) : Response
+		public static function notModified($data = null, string $message = 'bad request') : Response
 		{
-			return new Response(Response::NOT_MODIFIED, 'not modified', $data);
+			return new Response(Response::NOT_MODIFIED, $message, $data);
 		}
 
 		/**
-		 * @param mixed $data = null
+		 * @param mixed  $data = null
+		 * @param string $message = 'bad request'
 		 * @return Response
 		 */
-		public static function badRequest($data = null) : Response
+		public static function badRequest($data = null, string $message = 'bad request') : Response
 		{
-			return new Response(Response::BAD_REQUEST, 'bad request', $data);
+			return new Response(Response::BAD_REQUEST, $message, $data);
 		}
 
 		/**
-		 * @param mixed $data = null
+		 * @param mixed  $data = null
+		 * @param string $message = 'unauthorized'
 		 * @return Response
 		 */
-		public static function unauthorized($data = null) : Response
+		public static function unauthorized($data = null, string $message = 'unauthorized') : Response
 		{
-			return new Response(Response::UNAUTHORIZED, 'unauthorized', $data);
+			return new Response(Response::UNAUTHORIZED, $message, $data);
 		}
 
 		/**
-		 * @param mixed $data = null
+		 * @param mixed  $data = null
+		 * @param string $message = 'forbidden'
 		 * @return Response
 		 */
-		public static function forbidden($data = null) : Response
+		public static function forbidden($data = null, string $message = 'forbidden') : Response
 		{
-			return new Response(Response::FORBIDDEN, 'forbidden', $data);
+			return new Response(Response::FORBIDDEN, $message, $data);
 		}
 
 		/**
-		 * @param mixed $data = null
+		 * @param mixed  $data = null
+		 * @param string $message = 'not found'
 		 * @return Response
 		 */
-		public static function notFound($data = null) : Response
+		public static function notFound($data = null, string $message = 'not found') : Response
 		{
-			return new Response(Response::NOT_FOUND, 'not found', $data);
+			return new Response(Response::NOT_FOUND, $message, $data);
 		}
 
 		/**
-		 * @param mixed $data = null
+		 * @param mixed  $data = null
+		 * @param string $message = 'method not allowed'
 		 * @return Response
 		 */
-		public static function methodNotAllowed($data = null) : Response
+		public static function methodNotAllowed($data = null, string $message = 'method not allowed') : Response
 		{
-			return new Response(Response::METHOD_NOT_ALLOWED, 'method not allowed', $data);
+			return new Response(Response::METHOD_NOT_ALLOWED, $message, $data);
 		}
 
 		/**
-		 * @param mixed $data = null
+		 * @param mixed  $data = null
+		 * @param string $message = 'too many requests'
 		 * @return Response
 		 */
-		public static function tooManyRequests($data = null) : Response
+		public static function tooManyRequests($data = null, string $message = 'too many requests') : Response
 		{
-			return new Response(Response::TOO_MANY_REQUESTS, 'too many requests', $data);
+			return new Response(Response::TOO_MANY_REQUESTS, $message, $data);
 		}
 
 		/**
-		 * @param mixed $data = null
+		 * @param mixed  $data = null
+		 * @param string $message = 'error'
 		 * @return Response
 		 */
-		public static function error($data = null) : Response
+		public static function error($data = null, string $message = 'error') : Response
 		{
-			return new Response(Response::ERROR, 'internal server error', $data);
+			return new Response(Response::ERROR, $message, $data);
 		}
 	}
 }

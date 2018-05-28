@@ -2,6 +2,7 @@
 
 namespace Hashbang
 {
+	use Exception;
 	use UnexpectedValueException;
 
 	/**
@@ -11,6 +12,21 @@ namespace Hashbang
 	 */
 	class Session
 	{
+		/**
+		 * @var int
+		 */
+		private $secure;
+
+		/**
+		 * @var string
+		 */
+		private $path;
+
+		/**
+		 * @var string
+		 */
+		private $domain;
+
 		/**
 		 * Session constructor.
 		 * @param bool   $secure = true
@@ -43,6 +59,53 @@ namespace Hashbang
 			{
 				throw new UnexpectedValueException();
 			}
+
+			$this->secure = $secure;
+			$this->path   = $path;
+			$this->domain = $domain;
+		}
+
+		/**
+		 * @return string|null
+		 */
+		public function getToken() : ?string
+		{
+			if (!isset($this->token))
+			{
+				try
+				{
+					$this->token = hash_hmac('sha256', session_id(), random_bytes(32));
+				}
+				catch (Exception $e)
+				{
+					return null;
+				}
+			}
+
+			return $this->token;
+		}
+
+		/**
+		 * @param string $name = 'name'
+		 * @return bool
+		 */
+		public function sendToken(string $name = 'token') : bool
+		{
+			return setcookie($name, $this->getToken(), 0, $this->path, $this->domain, $this->secure);
+		}
+
+		/**
+		 * @param string $token
+		 * @return bool
+		 */
+		public function verifyToken(string $token) : bool
+		{
+			if (!isset($this->token))
+			{
+				return false;
+			}
+
+			return hash_equals($this->token, $token);
 		}
 
 		/**
