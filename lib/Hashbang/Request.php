@@ -47,6 +47,7 @@ namespace Hashbang
 
 		/**
 		 * @return stdClass|null
+		 * @throws ResponseException
 		 */
 		public static function getBody() : ?stdClass
 		{
@@ -62,7 +63,19 @@ namespace Hashbang
 				return null;
 			}
 
-			return json_decode($input);
+			if (empty($input))
+			{
+				return new stdClass();
+			}
+
+			$data = json_decode($input);
+
+			if ($data === null)
+			{
+				throw new ResponseException(Response::ERROR, 'malformed request body');
+			}
+
+			return $data;
 		}
 	}
 }

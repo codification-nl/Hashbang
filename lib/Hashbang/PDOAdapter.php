@@ -14,7 +14,7 @@ namespace Hashbang
 		public const ERROR_MESSAGE = 'database error';
 
 		/**
-		 * @var PDO
+		 * @var PDO|null
 		 */
 		private $connection = null;
 
@@ -32,6 +32,14 @@ namespace Hashbang
 		 * @var string
 		 */
 		private $password;
+
+		/**
+		 * @return PDO|null
+		 */
+		public function getConnection() : ?PDO
+		{
+			return $this->connection;
+		}
 
 		/**
 		 * PDOAdapter constructor.
@@ -169,6 +177,39 @@ namespace Hashbang
 			}
 
 			return $st;
+		}
+
+		/**
+		 * @param callable $transaction
+		 * @throws ResponseException
+		 */
+		public function transaction(callable $transaction) : void
+		{
+			$this->connect();
+
+			if (!$this->connection->beginTransaction())
+			{
+				throw new ResponseException(Response::ERROR, 'failed to begin transaction');
+			}
+
+			try
+			{
+				call_user_func($transaction);
+
+				if (!$this->connection->commit())
+				{
+					throw new ResponseException(Response::ERROR, 'failed to commit transaction');
+				}
+			}
+			catch (PDOException $e)
+			{
+				if (!$this->connection->rollBack())
+				{
+					throw new ResponseException(Response::ERROR, 'failed to roll back transaction');
+				}
+
+				throw new ResponseException(Response::ERROR, PDOAdapter::ERROR_MESSAGE, $e);
+			}
 		}
 	}
 }

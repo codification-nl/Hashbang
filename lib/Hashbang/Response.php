@@ -35,12 +35,12 @@ namespace Hashbang
 		protected $code;
 
 		/**
-		 * @var string
+		 * @var string|null
 		 */
-		protected $message;
+		protected $message = null;
 
 		/**
-		 * @var array
+		 * @var mixed
 		 */
 		protected $data = null;
 
@@ -58,17 +58,17 @@ namespace Hashbang
 		}
 
 		/**
-		 * @return string
+		 * @return string|null
 		 */
-		public function getMessage() : string
+		public function getMessage() : ?string
 		{
 			return $this->message;
 		}
 
 		/**
-		 * @return array|null
+		 * @return mixed
 		 */
-		public function getData() : ?array
+		public function getData()
 		{
 			return $this->data;
 		}

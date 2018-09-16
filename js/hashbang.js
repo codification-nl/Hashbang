@@ -44,49 +44,131 @@
 					this.removeChild(child);
 				}
 			}
-		},
-		findParentElement: {
-			value: function (parent) {
-				let element = this;
-
-				while (element !== null && element !== document.documentElement) {
-					if (element === parent) {
-						return true;
-					}
-
-					element = element.parentElement;
-				}
-
-				return false;
-			}
 		}
 	};
 
+	/**
+	 * @function Element#$
+	 * @param {string} selector
+	 * @returns {Element}
+	 */
+
+	/**
+	 * @function Element#$$
+	 * @param {string} selector
+	 * @returns {Element[]}
+	 */
+
+	/**
+	 * @function Element#addAttribute
+	 * @param {string} name
+	 */
+
+	/**
+	 * @function Element#clearChildren
+	 */
+
 	Object.defineProperties(Element.prototype, helpers);
+
+	/**
+	 * @function Document#$
+	 * @param {string} selector
+	 * @returns {Element}
+	 */
+
+	/**
+	 * @function Document#$$
+	 * @param {string} selector
+	 * @returns {Element[]}
+	 */
+
+	/**
+	 * @function Document#addAttribute
+	 * @param {string} name
+	 */
+
+	/**
+	 * @function Document#clearChildren
+	 */
+
 	Object.defineProperties(Document.prototype, helpers);
+
+	/**
+	 * @function DocumentFragment#$
+	 * @param {string} selector
+	 * @returns {Element}
+	 */
+
+	/**
+	 * @function DocumentFragment#$$
+	 * @param {string} selector
+	 * @returns {Element[]}
+	 */
+
+	/**
+	 * @function DocumentFragment#addAttribute
+	 * @param {string} name
+	 */
+
+	/**
+	 * @function DocumentFragment#clearChildren
+	 */
+
 	Object.defineProperties(DocumentFragment.prototype, helpers);
 
-	Object.defineProperties(Array.prototype, {
-		clear: {
-			value: function () {
-				while (this.length) {
-					this.shift();
-				}
-			}
-		},
-		select: {
-			value: function (callback) {
-				return this.reduce((result, i) => result.concat(callback(i)), []);
-			}
+	/**
+	 * @function Array#clear
+	 */
+	Array.prototype.define("clear", function () {
+		while (this.length) {
+			this.shift();
 		}
 	});
 
+	/**
+	 * @function Array#select
+	 * @param {Array~SelectCallback} callback
+	 */
+	Array.prototype.define("select", function (callback) {
+		return this.reduce((result, i) => result.concat(callback(i)), []);
+	});
+
+	/**
+	 * @callback Event~SelectCallback
+	 * @param {*} value
+	 */
+
+	/**
+	 * @function EventTarget#on
+	 * @param {string} type
+	 * @param {EventListenerOrEventListenerObject} listener
+	 * @param {boolean|AddEventListenerOptions} [options = false]
+	 */
+	EventTarget.prototype.define("on", function (type, listener, options) {
+		type.split(" ").forEach(x => {
+			this.addEventListener(x, listener, options);
+		});
+	});
+
 	if (!("clamp" in Math)) {
+		/**
+		 * @function Math.clamp
+		 * @param {number} x
+		 * @param {number} a
+		 * @param {number} b
+		 * @returns {number}
+		 */
 		Math.define("clamp", (x, a, b) => Math.min(Math.max(+x, +a), +b));
 	}
 
 	/** @namespace HB */
 	const hb = {};
+
+	/**
+	 * @readonly
+	 * @member {boolean} hb.debug
+	 */
+	hb.define("debug", false, true);
 
 	/**
 	 * @function hb.uuid
@@ -146,7 +228,7 @@
 			/**
 			 * @private
 			 * @readonly
-			 * @member {Array.<Event>} hb.EventDispatcher#_events
+			 * @member {Event[]} hb.EventDispatcher#_events
 			 */
 			this.define("_events", []);
 		}
@@ -168,7 +250,7 @@
 		 * @param {Event~Callback} callback
 		 */
 		on(type, callback) {
-			this._events.push(new Event(type, callback));
+			this._events.push(...type.split(" ").map(x => new Event(x, callback)));
 		}
 	}
 
@@ -235,7 +317,7 @@
 	 * @property {string} [domain]
 	 */
 
-	/** @type {RegExp} @memberOf Route~ */ const patternOpt = /\((\/:[a-z]+)\)\?/g;
+	/** @type {RegExp} @memberOf Route~ */ const patternOpt = /\((\/?:[a-z]+)\)\?/g;
 	/** @type {string} @memberOf Route~ */ const replaceOpt = "(?:$1)?";
 
 	/** @type {RegExp} @memberOf Route~ */ const patternVal = /:[a-z]+/g;
@@ -289,7 +371,7 @@
 
 	/**
 	 * @class hb.Router
-	 * @extends Array
+	 * @extends Array.<Route>
 	 */
 	class Router extends Array {
 		/**
@@ -327,7 +409,9 @@
 
 				matches = matches.map(Router.decode);
 
-				console.info("Router: %s", route.name, matches);
+				if (hb.debug) {
+					console.info("Router: %s", route.name, matches);
+				}
 
 				route.callback(...matches);
 
@@ -342,6 +426,10 @@
 		 * @returns {string}
 		 */
 		static encode(x) {
+			if (x === undefined || x === null) {
+				return "";
+			}
+
 			return x.replace(/ /g, "+");
 		}
 
@@ -350,6 +438,10 @@
 		 * @returns {string}
 		 */
 		static decode(x) {
+			if (x === undefined || x === null) {
+				return "";
+			}
+
 			return window.decodeURIComponent(x.replace(/\+/g, " "));
 		}
 	}
@@ -359,23 +451,33 @@
 	 * @extends hb.EventDispatcher
 	 */
 	class Client extends EventDispatcher {
-		/**
-		 * @type {boolean}
-		 */
+		/** @constant {number} */ static get OK() { return 200; }
+		/** @constant {number} */ static get CREATED() { return 201; }
+		/** @constant {number} */ static get ACCEPTED() { return 202; }
+		/** @constant {number} */ static get NO_CONTENT() { return 204; }
+		/** @constant {number} */ static get SEE_OTHER() { return 303; }
+		/** @constant {number} */ static get NOT_MODIFIED() { return 304; }
+		/** @constant {number} */ static get BAD_REQUEST() { return 400; }
+		/** @constant {number} */ static get UNAUTHORIZED() { return 401; }
+		/** @constant {number} */ static get FORBIDDEN() { return 403; }
+		/** @constant {number} */ static get NOT_FOUND() { return 404; }
+		/** @constant {number} */ static get METHOD_NOT_ALLOWED() { return 405; }
+		/** @constant {number} */ static get TOO_MANY_REQUESTS() { return 429; }
+		/** @constant {number} */ static get ERROR() { return 500; }
+		/** @constant {number} */ static get BAD_GATEWAY() { return 502; }
+		/** @constant {number} */ static get SERVICE_UNAVAILABLE() { return 503; }
+
+		/** @type {boolean} */
 		get ready() {
 			return this._ready;
 		}
 
-		/**
-		 * @type {number}
-		 */
+		/** @type {number} */
 		get timeout() {
 			return this._xhr.timeout / 1000;
 		}
 
-		/**
-		 * @type {number}
-		 */
+		/** @type {number} */
 		set timeout(value) {
 			this._xhr.timeout = value * 1000;
 		}
@@ -394,7 +496,7 @@
 			/**
 			 * @private
 			 * @readonly
-			 * @member {Array.<Element>} hb.Client#_targets
+			 * @member {Element[]} hb.Client#_targets
 			 */
 			this.define("_targets", []);
 
@@ -502,7 +604,9 @@
 			params  = params || null;
 			headers = headers || {};
 
+			/* jshint -W069 */
 			headers["Accept"] = this._accept;
+			/* jshint +W069 */
 
 			if (params !== null) {
 				switch (method) {
@@ -517,7 +621,9 @@
 				}
 			}
 
-			console.info("Client: %s %s", method, url, params, headers);
+			if (hb.debug) {
+				console.info("Client: %s %s", method, url, params, headers);
+			}
 
 			this._targets.forEach(x => x.removeAttribute("loading"));
 			this._targets.clear();
@@ -563,13 +669,13 @@
 
 	/**
 	 * @callback hb.Client~EventHandler
-	 * @param {?Array.<Element>} targets
+	 * @param {?Element[]} targets
 	 */
 
 	/**
 	 * @callback hb.Client~DataHandler
 	 * @param {?Object} data
-	 * @param {?Array.<Element>} targets
+	 * @param {?Element[]} targets
 	 */
 
 	/**
@@ -614,26 +720,9 @@
 	 * @class hb.Template
 	 */
 	class Template {
-		/**
-		 * @type {number}
-		 */
-		static get NONE() {
-			return -1;
-		}
-
-		/**
-		 * @type {number}
-		 */
-		static get MARKER() {
-			return 0;
-		}
-
-		/**
-		 * @type {number}
-		 */
-		static get FOR() {
-			return 1;
-		}
+		/** @constant {number} */ static get NONE() { return -1; }
+		/** @constant {number} */ static get MARKER() { return 0; }
+		/** @constant {number} */ static get FOR() { return 1; }
 
 		/**
 		 * @private
@@ -645,14 +734,14 @@
 
 		/**
 		 * Template constructor.
-		 * @param {HTMLTemplateElement} element
+		 * @param {Element} element
 		 */
 		constructor(element) {
 
 			/**
 			 * @private
 			 * @readonly
-			 * @member {Array.<Object>} hb.Template#_
+			 * @member {Object[]} hb.Template#_
 			 */
 			this.define("_", []);
 
@@ -710,7 +799,7 @@
 		 * @param {string} source
 		 * @param {number} [cursor = 0]
 		 * @param {number} [begin]
-		 * @param {Array.<string>} [matches]
+		 * @param {string[]} [matches]
 		 * @returns {string}
 		 */
 		_parseControls(source, cursor, begin, matches) {
@@ -868,6 +957,11 @@
 	 * @extends hb.EventDispatcher
 	 */
 	class Timer extends EventDispatcher {
+		/** @type {boolean} */
+		get running() {
+			return (this._id !== null);
+		}
+
 		/**
 		 * Timer constructor.
 		 */
@@ -903,12 +997,11 @@
 		 */
 		stop() {
 			if (this._id === null) {
+				this.dispatch("stopped");
 				return;
 			}
 
 			window.clearTimeout(this._id);
-
-			this.dispatch("stopped");
 
 			this._id = null;
 		}
@@ -926,16 +1019,12 @@
 	 * @abstract
 	 */
 	class Showable extends EventDispatcher {
-		/**
-		 * @type {boolean}
-		 */
+		/** @type {boolean} */
 		get open() {
 			return this.element.hasAttribute("open");
 		}
 
-		/**
-		 * @type {boolean}
-		 */
+		/** @type {boolean} */
 		set open(value) {
 			if (value) {
 				this.element.addAttribute("open");

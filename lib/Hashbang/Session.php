@@ -13,7 +13,17 @@ namespace Hashbang
 	class Session
 	{
 		/**
+		 * @var string
+		 */
+		private $name;
+
+		/**
 		 * @var int
+		 */
+		private $lifetime;
+
+		/**
+		 * @var bool
 		 */
 		private $secure;
 
@@ -60,9 +70,11 @@ namespace Hashbang
 				throw new UnexpectedValueException();
 			}
 
-			$this->secure = $secure;
-			$this->path   = $path;
-			$this->domain = $domain;
+			$this->name     = $name;
+			$this->lifetime = $lifetime;
+			$this->secure   = $secure;
+			$this->path     = $path;
+			$this->domain   = $domain;
 		}
 
 		/**
@@ -86,12 +98,13 @@ namespace Hashbang
 		}
 
 		/**
-		 * @param string $name = 'name'
+		 * @param string $name = 'token'
+		 * @param int    $lifetime = 0
 		 * @return bool
 		 */
-		public function sendToken(string $name = 'token') : bool
+		public function sendToken(string $name = 'token', int $lifetime = 0) : bool
 		{
-			return setcookie($name, $this->getToken(), 0, $this->path, $this->domain, $this->secure);
+			return $this->sendCookie($name, $this->getToken(), $lifetime);
 		}
 
 		/**
@@ -106,6 +119,46 @@ namespace Hashbang
 			}
 
 			return hash_equals($this->token, $token);
+		}
+
+		/**
+		 * @return bool
+		 */
+		public function destroy() : bool
+		{
+			if (!$this->sendCookie($this->name, null, -$this->lifetime, true))
+			{
+				return false;
+			}
+
+			session_unset();
+
+			return session_destroy();
+		}
+
+		/**
+		 * @param string      $name
+		 * @param string|null $value = null
+		 * @param int         $lifetime = 0
+		 * @param bool        $httpOnly = false
+		 * @return bool
+		 */
+		private function sendCookie(string $name, string $value = null, int $lifetime = 0, bool $httpOnly = false) : bool
+		{
+			if ($lifetime !== 0)
+			{
+				$lifetime += time();
+			}
+
+			return setcookie(
+				$name,
+				$value ?? '',
+				$lifetime,
+				$this->path,
+				$this->domain,
+				$this->secure,
+				$httpOnly
+			);
 		}
 
 		/**
